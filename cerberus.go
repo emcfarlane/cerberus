@@ -1,43 +1,15 @@
-package main
+package cerberus
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"os"
 	"strings"
-	// "github.com/aws/aws-sdk-go/aws"
-	// "github.com/aws/aws-sdk-go/aws/session"
-	// "github.com/aws/aws-sdk-go/service/kinesis"
 )
-
-var (
-	port   = flag.String("port", "8000", "listening port")
-	target = flag.String("target", "localhost:9000", "proxy target")
-)
-
-// // Firehose implements AWS Kinesis writer
-// type Firehose struct {
-// 	session *session.Session
-// 	kinesis *kinesis.Kinesis
-// }
-
-// func (f *Firehose) Write(data []byte) (int, error) {
-// 	record := &kinesis.PutRecordInput{
-// 		Data:         data,
-// 		PartitionKey: aws.String(""),
-// 		StreamName:   aws.String(""),
-// 	}
-
-// 	_, err := f.kinesis.PutRecord(record)
-// 	return len(data), err
-// }
 
 var reqWriteExcludeHeaderDump = map[string]bool{
 	"Host":              true, // not in Header map anyway
@@ -174,6 +146,7 @@ func singleJoiningSlash(a, b string) string {
 	return a + b
 }
 
+// New
 func NewDumpReverseProxy(target *url.URL, transport http.RoundTripper, stream io.Writer) *httputil.ReverseProxy {
 	targetQuery := target.RawQuery
 
@@ -197,18 +170,4 @@ func NewDumpReverseProxy(target *url.URL, transport http.RoundTripper, stream io
 			Stream:    stream,
 		},
 	}
-}
-
-func init() {
-	flag.Parse()
-}
-
-func main() {
-	proxy := NewDumpReverseProxy(&url.URL{
-		Scheme: "http",
-		Host:   *target,
-	}, http.DefaultTransport, os.Stdout)
-
-	log.Println("Running...")
-	http.ListenAndServe(":"+*port, proxy)
 }

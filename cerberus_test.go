@@ -1,4 +1,4 @@
-package main
+package cerberus
 
 import (
 	"io/ioutil"
